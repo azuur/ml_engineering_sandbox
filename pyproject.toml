@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "mlops-nth-try"
+version = "0.1.0"
+description = "My nth attempt at making a demo MLOps project"
+authors = ["Adrian Zuur <adrianzuur@gmail.com>"]
+readme = "README.md"
+packages = [{include = "mlops_nth_try"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+scikit-learn = "^1.3.2"
+fastapi = "^0.108.0"
+numpy = "^1.26.2"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.9"
+mypy = "^1.8.0"
+pytest = "^7.4.4"
+python-dotenv = "^1.0.0"
+pre-commit = "^3.6.0"
+pandas-stubs = "^2.1.4.231227"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+show-fixes = true
+select = [
+    "F",   # Pyflakes
+    "W",   # pycodestyle
+    "E",   # pycodestyle
+    "I",   # isort
+    "UP",  # pyupgrade
+    "PL",  # Pylint
+    "T201", # Print Statement
+]
+
+[[tool.mypy.overrides]]
+module = "sklearn.*"
+ignore_missing_imports = true
