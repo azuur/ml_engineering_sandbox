@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from ml_pipelines.common.model import load_model, predict
-from ml_pipelines.eval.eval import (
+from ml_pipelines.logic.common.model import load_model, predict
+from ml_pipelines.logic.eval.eval import (
     calculate_metrics,
     make_roc_plot,
     prob_calibration_plot,
