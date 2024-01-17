@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "My nth attempt at making a demo MLOps project"
 authors = ["Adrian Zuur <adrianzuur@gmail.com>"]
 readme = "README.md"
-packages = [{include = "mlops_nth_try"}]
+packages = [{include = "ml_pipelines"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
