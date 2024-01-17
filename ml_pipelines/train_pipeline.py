@@ -19,4 +19,4 @@ raw_test_data.to_csv("raw_test_data.csv", index=False)
 train_data.to_csv("train_data.csv", index=False)
 test_data.to_csv("test_data.csv", index=False)
 with open("feature_eng_params.json", "w") as f:
-    f.write(feature_eng_params.json())
+    f.write(feature_eng_params.model_dump_json())

@@ -1,5 +1,9 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
-name = "mlops-nth-try"
+name = "ml_pipelines"
 version = "0.1.0"
 description = "My nth attempt at making a demo MLOps project"
 authors = ["Adrian Zuur <adrianzuur@gmail.com>"]
@@ -21,10 +25,6 @@ python-dotenv = "^1.0.0"
 pre-commit = "^3.6.0"
 pandas-stubs = "^2.1.4.231227"
 isort = "^5.13.2"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 88
