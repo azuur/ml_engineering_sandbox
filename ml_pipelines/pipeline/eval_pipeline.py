@@ -26,7 +26,7 @@ def eval_pipeline(model: LogisticRegression, data: pd.DataFrame):
     calibration_plot = prob_calibration_plot(data, y_score)
 
     # Output
-    plots, ax = plt.subplots(1, 2)
+    plots, ax = plt.subplots(1, 2, figsize=(10, 5))
     roc_plot.plot(ax=ax[0])
     ax[0].plot([0, 1], [0, 1])
     calibration_plot(ax=ax[1])
