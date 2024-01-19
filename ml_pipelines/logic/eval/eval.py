@@ -13,7 +13,7 @@ def make_roc_plot(model: LogisticRegression, data: pd.DataFrame):
     return display
 
 
-def prob_calibration_plot(data: pd.DataFrame, y_score, step=0.005):
+def prob_calibration_plot(data: pd.DataFrame, y_score: np.ndarray, step=0.005):
     xs = []
     ys = []
 

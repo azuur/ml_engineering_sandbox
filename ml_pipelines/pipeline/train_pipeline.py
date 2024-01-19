@@ -7,13 +7,34 @@ from ml_pipelines.logic.common.feature_eng import (
 from ml_pipelines.logic.train.train import save_model, split_data, train_model
 
 # Input
-data = pd.read_csv("data.csv")
 
-raw_train_data, raw_test_data = split_data(data, random_state=3397)
-feature_eng_params = fit_feature_transform(raw_train_data)
-train_data = transform_features(raw_train_data, feature_eng_params)
-test_data = transform_features(raw_test_data, feature_eng_params)
-model = train_model(train_data=train_data)
+
+def train_pipeline(data: pd.DataFrame, split_random_state: int):
+    raw_train_data, raw_test_data = split_data(data, random_state=split_random_state)
+    feature_eng_params = fit_feature_transform(raw_train_data)
+    train_data = transform_features(raw_train_data, feature_eng_params)
+    test_data = transform_features(raw_test_data, feature_eng_params)
+    model = train_model(train_data=train_data)
+    return (
+        model,
+        feature_eng_params,
+        raw_train_data,
+        raw_test_data,
+        train_data,
+        test_data,
+    )
+
+
+data = pd.read_csv("data.csv")
+(
+    model,
+    feature_eng_params,
+    raw_train_data,
+    raw_test_data,
+    train_data,
+    test_data,
+) = train_pipeline(data, split_random_state=3825)
+
 
 # Outputs
 save_model(model)
