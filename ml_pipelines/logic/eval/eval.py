@@ -8,7 +8,7 @@ from sklearn.metrics import RocCurveDisplay, roc_auc_score
 
 def calculate_metrics(y_true: pd.Series, y_score: np.ndarray, logger: Logger):
     logger.info(f"Calculating metrics for {len(y_true)} samples.")
-    return roc_auc_score(y_true, y_score)
+    return float(roc_auc_score(y_true, y_score))
 
 
 def make_roc_plot(model: LogisticRegression, data: pd.DataFrame, logger: Logger):

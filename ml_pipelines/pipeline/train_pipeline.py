@@ -1,17 +1,24 @@
-import logging
-import pickle
-import sys
 from logging import Logger
+from typing import TypedDict
 
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 
 from ml_pipelines.logic.common.feature_eng import (
+    FeatureEngineeringParams,
     fit_feature_transform,
     transform_features,
 )
 from ml_pipelines.logic.train.train import split_data, train_model
 
-# Input
+
+class TrainArtifacts(TypedDict):
+    model: LogisticRegression
+    feature_eng_params: FeatureEngineeringParams
+    raw_train_data: pd.DataFrame
+    raw_test_data: pd.DataFrame
+    train_data: pd.DataFrame
+    test_data: pd.DataFrame
 
 
 def train_pipeline(data: pd.DataFrame, split_random_state: int, logger: Logger):
@@ -22,38 +29,11 @@ def train_pipeline(data: pd.DataFrame, split_random_state: int, logger: Logger):
     test_data = transform_features(raw_test_data, feature_eng_params, logger)
     model = train_model(train_data, logger)
     logger.info("Finished train pipeline.")
-    return (
-        model,
-        feature_eng_params,
-        raw_train_data,
-        raw_test_data,
-        train_data,
-        test_data,
+    return TrainArtifacts(
+        model=model,
+        feature_eng_params=feature_eng_params,
+        raw_train_data=raw_train_data,
+        raw_test_data=raw_test_data,
+        train_data=train_data,
+        test_data=test_data,
     )
-
-
-logger = Logger(__file__)
-logger.addHandler(logging.StreamHandler(sys.stdout))
-data = pd.read_csv("data.csv")
-(
-    model,
-    feature_eng_params,
-    raw_train_data,
-    raw_test_data,
-    train_data,
-    test_data,
-) = train_pipeline(data, split_random_state=3825, logger=logger)
-
-
-# Outputs
-with open("model.pickle", "wb") as f:
-    pickle.dump(model, f)
-raw_train_data.to_csv("raw_train_data.csv", index=False)
-raw_test_data.to_csv("raw_test_data.csv", index=False)
-train_data.to_csv("train_data.csv", index=False)
-test_data.to_csv("test_data.csv", index=False)
-with open("feature_eng_params.json", "w") as f:  # type: ignore
-    f.write(feature_eng_params.model_dump_json())
-test_data.to_csv("test_data.csv", index=False)
-with open("feature_eng_params.json", "w") as f:  # type: ignore
-    f.write(feature_eng_params.model_dump_json())
