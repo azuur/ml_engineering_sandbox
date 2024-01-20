@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from logging import Logger
+from typing import Union
 
 import typer
 
@@ -50,8 +51,8 @@ if __name__ == "__main__":
     TRAIN_ARTIFACTS_ROOT_DIR = os.environ["TRAIN_ARTIFACTS_ROOT_DIR"]
 
     def main(
-        raw_data_version: str | None = None,
-        train_version: str | None = None,
+        raw_data_version: Union[str, None] = None,  # noqa: UP007
+        train_version: Union[str, None] = None,  # noqa: UP007
         raw_data_root_path: str = RAW_DATA_ROOT_DIR,
         train_artifacts_root_path: str = TRAIN_ARTIFACTS_ROOT_DIR,
         split_random_state: int = 3825,
