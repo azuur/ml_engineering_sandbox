@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from logging import Logger
 
 import pandas as pd
@@ -18,10 +19,16 @@ class Point(BaseModel):
     x2: float
 
 
+PredictionLoggingFunc = Callable[
+    [list[tuple[Point, float]]], tuple[bool, Exception | None]
+]
+
+
 def create_fastapi_app(
     model: LogisticRegression,
     feature_eng_params: FeatureEngineeringParams,
     logger: Logger,
+    prediction_logging_func: PredictionLoggingFunc,
 ):
     app = FastAPI()
 
@@ -33,24 +40,33 @@ def create_fastapi_app(
         :return: List of probability predictions (or single prediction)
         """
         try:
+            logger.info("Responding to request for predictions. (GET /predict/)")
             single = False
             if isinstance(inputs, Point):
                 single = True
                 inputs = [inputs]
-            # Convert the input points to a numpy array
+            logger.info(f"Number of samples for inference: {len(inputs)}")
+
             x_matrix = pd.DataFrame([{"X1": p.x1, "X2": p.x2} for p in inputs])
             x_matrix = transform_features(x_matrix, feature_eng_params, logger)
+            predictions: list[float] = predict(model, x_matrix, logger).tolist()
+            logger.info("Computed inference.")
 
-            # Make predictions using the pre-trained model
-            predictions = predict(model, x_matrix, logger).tolist()
+            predictions_to_log = list(zip(inputs, predictions))
+            log_success, log_exception = prediction_logging_func(predictions_to_log)
+            if log_success and log_exception is None:
+                logger.info("Logged predictions for samples.")
+            else:
+                logger.warning(
+                    "Unable to log predictions for samples.", exc_info=log_exception
+                )
 
-            if single:
-                predictions = predictions[0]
+            output = predictions[0] if single else predictions
+            logger.info("Returning predictions.")
+            return {"predictions": output}
 
-            return {"predictions": predictions}
-
-        except Exception:
+        except Exception as e:
+            logger.error("Inference failed.", exc_info=e)
             raise HTTPException(status_code=500, detail="Internal server error")
 
-    return app
     return app
