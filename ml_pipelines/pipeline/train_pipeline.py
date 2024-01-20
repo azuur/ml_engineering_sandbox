@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
@@ -15,10 +15,10 @@ from ml_pipelines.logic.train.train import split_data, train_model
 class TrainArtifacts(TypedDict):
     model: LogisticRegression
     feature_eng_params: FeatureEngineeringParams
-    raw_train_data: pd.DataFrame
-    raw_test_data: pd.DataFrame
-    train_data: pd.DataFrame
-    test_data: pd.DataFrame
+    raw_train_data: NotRequired[pd.DataFrame]
+    raw_test_data: NotRequired[pd.DataFrame]
+    train_data: NotRequired[pd.DataFrame]
+    test_data: NotRequired[pd.DataFrame]
 
 
 def train_pipeline(data: pd.DataFrame, split_random_state: int, logger: Logger):

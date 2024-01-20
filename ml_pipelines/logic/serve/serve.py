@@ -32,7 +32,7 @@ def create_fastapi_app(
 ):
     app = FastAPI()
 
-    @app.get("/predict/")
+    @app.post("/predict/")
     async def _(inputs: Point | list[Point]):
         """
         Endpoint to predict probabilities for the given list of points.

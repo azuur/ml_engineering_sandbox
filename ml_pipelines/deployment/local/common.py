@@ -40,22 +40,32 @@ def save_train_artifacts(
         pickle.dump(artifacts["model"], f)
     with open(version_dir / "feature_eng_params.json", "w") as f:  # type: ignore
         f.write(artifacts["feature_eng_params"].json())
-    artifacts["raw_train_data"].to_csv(version_dir / "raw_train_data.csv", index=False)
-    artifacts["raw_test_data"].to_csv(version_dir / "raw_test_data.csv", index=False)
-    artifacts["train_data"].to_csv(version_dir / "train_data.csv", index=False)
-    artifacts["test_data"].to_csv(version_dir / "test_data.csv", index=False)
+
+    data_keys = [
+        "raw_train_data",
+        "raw_test_data",
+        "train_data",
+        "test_data",
+    ]
+    for key in data_keys:
+        if key in artifacts:
+            dataset = artifacts[key]  # type: ignore
+            dataset.to_csv(version_dir / f"{key}.csv", index=False)
 
 
-def get_train_artifacts(
-    version: str,
-    root_path: os.PathLike,
-):
+def get_train_artifacts(version: str, root_path: os.PathLike, load_data: bool = True):
     version_dir = Path(root_path) / version
     with open(version_dir / "model.pickle", "rb") as f:  # type: ignore
         model: LogisticRegression = pickle.load(f)
 
     with open(version_dir / "feature_eng_params.json") as f:  # type: ignore
         feature_eng_params = FeatureEngineeringParams(**json.loads(f.read()))
+
+    if not load_data:
+        return TrainArtifacts(
+            model=model,
+            feature_eng_params=feature_eng_params,
+        )
 
     raw_train_data = pd.read_csv(version_dir / "raw_train_data.csv")
     raw_test_data = pd.read_csv(version_dir / "raw_test_data.csv")
