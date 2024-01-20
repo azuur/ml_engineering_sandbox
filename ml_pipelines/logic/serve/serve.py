@@ -1,3 +1,5 @@
+from logging import Logger
+
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -17,7 +19,9 @@ class Point(BaseModel):
 
 
 def create_fastapi_app(
-    model: LogisticRegression, feature_eng_params: FeatureEngineeringParams
+    model: LogisticRegression,
+    feature_eng_params: FeatureEngineeringParams,
+    logger: Logger,
 ):
     app = FastAPI()
 
@@ -35,10 +39,10 @@ def create_fastapi_app(
                 inputs = [inputs]
             # Convert the input points to a numpy array
             x_matrix = pd.DataFrame([{"X1": p.x1, "X2": p.x2} for p in inputs])
-            x_matrix = transform_features(x_matrix, feature_eng_params)
+            x_matrix = transform_features(x_matrix, feature_eng_params, logger)
 
             # Make predictions using the pre-trained model
-            predictions = predict(model, x_matrix).tolist()
+            predictions = predict(model, x_matrix, logger).tolist()
 
             if single:
                 predictions = predictions[0]
@@ -48,4 +52,5 @@ def create_fastapi_app(
         except Exception:
             raise HTTPException(status_code=500, detail="Internal server error")
 
+    return app
     return app
