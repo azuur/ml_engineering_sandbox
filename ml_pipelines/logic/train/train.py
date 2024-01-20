@@ -7,13 +7,15 @@ from sklearn.model_selection import train_test_split
 
 def split_data(data: pd.DataFrame, random_state: int, logger: Logger):
     logger.info(f"Splitting data for train/test. {random_state = }")
+    train_data: pd.DataFrame
+    test_data: pd.DataFrame
     train_data, test_data = train_test_split(
         data,
         train_size=0.8,
         random_state=random_state,
         stratify=data["Y"],
         shuffle=True,
-    )
+    )  # type: ignore
     return train_data, test_data
 
 

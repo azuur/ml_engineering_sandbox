@@ -1,7 +1,3 @@
-import json
-import logging
-import pickle
-import sys
 from logging import Logger
 
 import matplotlib.pyplot as plt
@@ -39,22 +35,6 @@ def eval_pipeline(
     make_calibration_plot(data, y_score, logger)(ax=axs[1])
     logger.info("Finished evaluation pipeline.")
     return (metrics, plots)
-
-
-with open("model.pickle", "rb") as f:  # type: ignore
-    model: LogisticRegression = pickle.load(f)
-
-with open("feature_eng_params.json") as f:  # type: ignore
-    feature_eng_params = FeatureEngineeringParams(**json.loads(f.read()))
-
-test_data = pd.read_csv("raw_test_data.csv")
-logger = Logger(__file__)
-logger.addHandler(logging.StreamHandler(sys.stdout))
-(metrics, plots) = eval_pipeline(model, feature_eng_params, test_data, logger)
-
-with open("metrics.txt", "w+") as f:  # type: ignore
-    f.write(str(metrics))  # type: ignore
-plots.savefig("calibration_plot.png")
 
 
 # fig, ax = plt.subplots()

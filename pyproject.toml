@@ -16,6 +16,8 @@ scikit-learn = "^1.3.2"
 fastapi = "^0.108.0"
 numpy = "^1.26.2"
 pandas = "^2.1.4"
+typer = "^0.9.0"
+uvicorn = {extras = ["standard"], version = "^0.26.0"}
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.9"
