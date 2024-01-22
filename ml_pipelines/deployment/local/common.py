@@ -91,6 +91,11 @@ def save_eval_artifacts(
     plots.savefig(str(version_dir / "calibration_plot.png"))
 
 
+def get_all_available_train_versions(root_path: os.PathLike | str):
+    root_dir = Path(root_path)
+    return [d.stem for d in root_dir.iterdir() if d.is_dir()]
+
+
 def get_latest_version(root_path: os.PathLike, filename: str) -> str:
     root_dir = Path(root_path)
     versions: list[tuple[str, float]] = []
@@ -98,3 +103,15 @@ def get_latest_version(root_path: os.PathLike, filename: str) -> str:
         st_mtime = (version_dir / filename).stat().st_mtime
         versions.append((version_dir.stem, st_mtime))
     return max(versions, key=lambda t: t[1])[0]
+
+
+def get_best_version(train_artifacts_root_path: os.PathLike):
+    train_dir = Path(train_artifacts_root_path)
+    with open(train_dir / "best_model") as f:
+        return f.read()
+
+
+def tag_best_version(train_version: str, train_artifacts_root_path: os.PathLike):
+    train_dir = Path(train_artifacts_root_path)
+    with open(train_dir / "best_model", "w") as f:
+        f.write(train_version)

@@ -36,7 +36,7 @@ def run_train_pipeline(  # noqa: PLR0913
     metrics, plots = eval_pipeline(
         train_artifacts["model"],
         train_artifacts["feature_eng_params"],
-        train_artifacts["raw_test_data"],
+        train_artifacts["raw_test_data"],  # type: ignore
         logger,
     )
     save_eval_artifacts(train_version, train_artifacts_root_path, metrics, plots)
