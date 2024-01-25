@@ -43,39 +43,56 @@ def run_train_pipeline(  # noqa: PLR0913
     logger.info("Saved eval artifacts.")
 
 
-if __name__ == "__main__":
-    from dotenv import load_dotenv
+def main(
+    raw_data_root_path: Union[str, None] = None,  # noqa: UP007
+    train_artifacts_root_path: Union[str, None] = None,  # noqa: UP007, E501
+    raw_data_version: Union[str, None] = None,  # noqa: UP007
+    train_version: Union[str, None] = None,  # noqa: UP007
+    split_random_state: int = 3825,
+):
+    """
+    Runs the feature engineering and training pipeline using local paths
+    for inputs and outputs.
 
-    load_dotenv()
-    RAW_DATA_ROOT_DIR = os.environ["RAW_DATA_ROOT_DIR"]
-    TRAIN_ARTIFACTS_ROOT_DIR = os.environ["TRAIN_ARTIFACTS_ROOT_DIR"]
+    If `raw_data_root_path` is null, the command searches for the RAW_DATA_ROOT_PATH
+    environment variable, and if not present, assumes this to be "/".
 
-    def main(
-        raw_data_version: Union[str, None] = None,  # noqa: UP007
-        train_version: Union[str, None] = None,  # noqa: UP007
-        raw_data_root_path: str = RAW_DATA_ROOT_DIR,
-        train_artifacts_root_path: str = TRAIN_ARTIFACTS_ROOT_DIR,
-        split_random_state: int = 3825,
-    ):
-        logger = Logger(__file__)
-        logger.addHandler(logging.StreamHandler(sys.stdout))
+    If `train_artifacts_root_path` is null, the command searches for the
+    TRAIN_ARTIFACTS_ROOT_PATH environment variable, and if not present,
+    assumes this to be "/".
 
-        if raw_data_version is None:
-            raw_data_version = get_latest_version(
-                raw_data_root_path,  # type: ignore
-                "raw_data.csv",
-            )
+    If `raw_data_version` is null, the command searches for the latest version in
+    `raw_data_root_path`.
 
-        if train_version is None:
-            train_version = make_version(prefix="model")
+    If `train_version` is null, the command automatically generates a new model
+    version to save train artifacts.
+    """
+    logger = Logger(__file__)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
 
-        run_train_pipeline(  # noqa: PLR0913
-            raw_data_version=raw_data_version,
-            raw_data_root_path=raw_data_root_path,  # type: ignore
-            train_version=train_version,
-            train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
-            logger=logger,
-            split_random_state=split_random_state,
+    if raw_data_root_path is None:
+        raw_data_root_path = os.environ.get("RAW_DATA_ROOT_PATH", "/")
+    if train_artifacts_root_path is None:
+        train_artifacts_root_path = os.environ.get("TRAIN_ARTIFACTS_ROOT_PATH", "/")
+
+    if raw_data_version is None:
+        raw_data_version = get_latest_version(
+            raw_data_root_path,  # type: ignore
+            "raw_data.csv",
         )
 
+    if train_version is None:
+        train_version = make_version(prefix="model")
+
+    run_train_pipeline(  # noqa: PLR0913
+        raw_data_version=raw_data_version,
+        raw_data_root_path=raw_data_root_path,  # type: ignore
+        train_version=train_version,
+        train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
+        logger=logger,
+        split_random_state=split_random_state,
+    )
+
+
+if __name__ == "__main__":
     typer.run(main)

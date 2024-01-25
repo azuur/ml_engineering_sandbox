@@ -100,6 +100,8 @@ def get_latest_version(root_path: os.PathLike, filename: str) -> str:
     root_dir = Path(root_path)
     versions: list[tuple[str, float]] = []
     for version_dir in root_dir.iterdir():
+        if not version_dir.is_dir():
+            continue
         st_mtime = (version_dir / filename).stat().st_mtime
         versions.append((version_dir.stem, st_mtime))
     return max(versions, key=lambda t: t[1])[0]
@@ -107,6 +109,8 @@ def get_latest_version(root_path: os.PathLike, filename: str) -> str:
 
 def get_best_version(train_artifacts_root_path: os.PathLike):
     train_dir = Path(train_artifacts_root_path)
+    if "best_model" not in set(f for f in train_dir.iterdir() if f.is_file()):
+        return None
     with open(train_dir / "best_model") as f:
         return f.read()
 
