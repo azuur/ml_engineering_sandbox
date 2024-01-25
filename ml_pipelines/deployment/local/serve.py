@@ -43,6 +43,8 @@ def main(
     train_version: Union[str, None] = None,  # noqa: UP007
 ):
     """
+    Serves a model in the /predict/ endpoint of a FastAPI app.
+
     If `train_artifacts_root_path` is null, the command searches for the
     TRAIN_ARTIFACTS_ROOT_PATH environment variable, and if not present,
     assumes this to be "/".

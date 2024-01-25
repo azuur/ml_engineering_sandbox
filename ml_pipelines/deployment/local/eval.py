@@ -50,13 +50,19 @@ def main(
     train_versions: Union[list[str], None] = None,  # noqa: UP007
 ):
     """
+    Runs the model evaluation and comparison pipeline using local paths
+    for inputs and outputs. The best model in the comparison is tagged as 'best_model'.
+
     If `raw_data_root_path` is null, the command searches for the RAW_DATA_ROOT_PATH
     environment variable, and if not present, assumes this to be "/".
+
     If `train_artifacts_root_path` is null, the command searches for the
     TRAIN_ARTIFACTS_ROOT_PATH environment variable, and if not present,
     assumes this to be "/".
+
     If `raw_data_version` is null, the command searches for the latest version in
     `raw_data_root_path`.
+
     If `train_versions` is null or empty, the command automatically evaluates all
     models found in `train_artifacts_root_path`
     """

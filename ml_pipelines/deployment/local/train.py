@@ -51,6 +51,9 @@ def main(
     split_random_state: int = 3825,
 ):
     """
+    Runs the feature engineering and training pipeline using local paths
+    for inputs and outputs.
+
     If `raw_data_root_path` is null, the command searches for the RAW_DATA_ROOT_PATH
     environment variable, and if not present, assumes this to be "/".
 
