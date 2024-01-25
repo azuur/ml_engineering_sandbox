@@ -21,6 +21,7 @@ def run_eval_comparison_pipeline(  # noqa: PLR0913
     raw_data_root_path: os.PathLike,
     train_versions: list[str],
     train_artifacts_root_path: os.PathLike,
+    tag_best_model: bool,
     logger: Logger,
 ):
     logger.info(f"Running eval pipeline on model versions: {train_versions}.")
@@ -39,8 +40,9 @@ def run_eval_comparison_pipeline(  # noqa: PLR0913
         )
         all_metrics.append((v, metrics))
     best_version = max(all_metrics, key=lambda t: t[1])[0]
-    logger.info(f"Tagging best version as {best_version}")
-    tag_best_version(best_version, train_artifacts_root_path)
+    if tag_best_model and len(train_versions) > 1:
+        logger.info(f"Tagging best version as {best_version}")
+        tag_best_version(best_version, train_artifacts_root_path)
 
 
 def main(
@@ -48,10 +50,11 @@ def main(
     train_artifacts_root_path: Union[str, None] = None,  # noqa: UP007, E501
     raw_data_version: Union[str, None] = None,  # noqa: UP007
     train_versions: Union[list[str], None] = None,  # noqa: UP007
+    tag_best_model: bool = False,
 ):
     """
     Runs the model evaluation and comparison pipeline using local paths
-    for inputs and outputs. The best model in the comparison is tagged as 'best_model'.
+    for inputs and outputs.
 
     If `raw_data_root_path` is null, the command searches for the RAW_DATA_ROOT_PATH
     environment variable, and if not present, assumes this to be "/".
@@ -64,7 +67,10 @@ def main(
     `raw_data_root_path`.
 
     If `train_versions` is null or empty, the command automatically evaluates all
-    models found in `train_artifacts_root_path`
+    models found in `train_artifacts_root_path`.
+
+    If `tag_best_model` is set (to true) and more than one model version is evaluated,
+    the best performing one is tagged as the best version.
     """
     logger = Logger(__file__)
     logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -90,6 +96,7 @@ def main(
         raw_data_root_path=raw_data_root_path,  # type: ignore
         train_versions=train_versions,  # type: ignore
         train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
+        tag_best_model=tag_best_model,
         logger=logger,
     )
 

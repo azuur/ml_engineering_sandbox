@@ -21,6 +21,9 @@ Simple ML pipeline repo for experimenting with CI/CD / DevOps / MLOps.
 - python ml_pipelines/deployment/local/train.py
 - python ml_pipelines/deployment/local/eval.py
 - python ml_pipelines/deployment/local/serve.py
+- python -m ml_pipelines train_local
+- python -m ml_pipelines eval_local
+- python -m ml_pipelines serve_local
 - sudo docker build -t ml_pipelines:latest .
 - sudo docker run --rm -it ml_pipelines:latest /bin/sh
-- sudo docker run --rm -it ml_pipelines:latest 'python ml_pipelines/deployment/local/train.py'
+- sudo docker run --rm -it ml_pipelines:latest 'python -m ml_pipelines --help'
