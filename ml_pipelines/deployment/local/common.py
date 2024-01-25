@@ -107,6 +107,8 @@ def get_latest_version(root_path: os.PathLike, filename: str) -> str:
 
 def get_best_version(train_artifacts_root_path: os.PathLike):
     train_dir = Path(train_artifacts_root_path)
+    if "best_model" not in set(f for f in train_dir.iterdir() if f.is_file()):
+        return None
     with open(train_dir / "best_model") as f:
         return f.read()
 
