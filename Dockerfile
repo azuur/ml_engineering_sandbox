@@ -44,6 +44,7 @@ RUN  groupadd -g "${GID}" python \
   && chown python:python -R /package
 
 COPY --from=build /dist/*.whl /package/dist/.
-RUN pip install /package/dist/*.whl
+RUN echo $(ls) && echo $(pwd) && echo $(ls dist/)
+RUN pip install dist/$(ls dist/ | grep .whl)
 
 USER python
