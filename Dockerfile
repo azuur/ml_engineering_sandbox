@@ -43,8 +43,8 @@ RUN  groupadd -g "${GID}" python \
   && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" python \
   && chown python:python -R /package
 
-COPY --from=build /dist/*.whl /package/dist/.
-RUN echo $(ls) && echo $(pwd) && echo $(ls dist)
-RUN pip install dist/$(ls dist/ | grep .whl)
+COPY --from=build /dist/*.whl /package/.
+RUN echo $(ls) && echo $(pwd)
+RUN pip install $(ls | grep .whl)
 
 USER python
