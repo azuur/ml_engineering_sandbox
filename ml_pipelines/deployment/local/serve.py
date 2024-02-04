@@ -7,7 +7,7 @@ from typing import Union
 import typer
 import uvicorn
 
-from ml_pipelines.deployment.local.common import (
+from ml_pipelines.deployment.local.io import (
     get_best_version,
     get_latest_version,
     get_train_artifacts,

@@ -6,7 +6,7 @@ from typing import Union
 
 import typer
 
-from ml_pipelines.deployment.local.common import (
+from ml_pipelines.deployment.local.io import (
     get_all_available_train_versions,
     get_latest_version,
     get_raw_data,
