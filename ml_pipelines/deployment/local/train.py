@@ -1,11 +1,13 @@
 import logging
 import os
 import sys
+from functools import partial
 from logging import Logger
 from typing import Union
 
 import typer
 
+from ml_pipelines.deployment.common.train import run_train_pipeline
 from ml_pipelines.deployment.local.io import (
     get_latest_version,
     get_raw_data,
@@ -13,34 +15,6 @@ from ml_pipelines.deployment.local.io import (
     save_eval_artifacts,
     save_train_artifacts,
 )
-from ml_pipelines.pipeline.eval_pipeline import eval_pipeline
-from ml_pipelines.pipeline.train_pipeline import train_pipeline
-
-
-def run_train_pipeline(  # noqa: PLR0913
-    raw_data_version: str,
-    raw_data_root_path: os.PathLike,
-    train_version: str,
-    train_artifacts_root_path: os.PathLike,
-    logger: Logger,
-    split_random_state: int = 3825,
-):
-    logger.info(f"Running full training pipeline version {train_version}.")
-    logger.info(f"Raw data version {raw_data_version}.")
-    raw_data = get_raw_data(raw_data_version, raw_data_root_path)
-    train_artifacts = train_pipeline(
-        raw_data, split_random_state=split_random_state, logger=logger
-    )
-    save_train_artifacts(train_version, train_artifacts_root_path, train_artifacts)
-    logger.info("Saved train artifacts.")
-    metrics, plots = eval_pipeline(
-        train_artifacts["model"],
-        train_artifacts["feature_eng_params"],
-        train_artifacts["raw_test_data"],  # type: ignore
-        logger,
-    )
-    save_eval_artifacts(train_version, train_artifacts_root_path, metrics, plots)
-    logger.info("Saved eval artifacts.")
 
 
 def main(
@@ -84,12 +58,26 @@ def main(
     if train_version is None:
         train_version = make_version(prefix="model")
 
+    get_raw_data_func = partial(
+        get_raw_data,
+        root_path=raw_data_root_path,  # type: ignore
+    )
+    save_train_artifacts_func = partial(
+        save_train_artifacts,
+        root_path=train_artifacts_root_path,  # type: ignore
+    )
+    save_eval_artifacts_func = partial(
+        save_eval_artifacts,
+        root_path=train_artifacts_root_path,  # type: ignore
+    )
+
     run_train_pipeline(  # noqa: PLR0913
         raw_data_version=raw_data_version,
-        raw_data_root_path=raw_data_root_path,  # type: ignore
         train_version=train_version,
-        train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
         logger=logger,
+        get_raw_data_func=get_raw_data_func,
+        save_train_artifacts_func=save_train_artifacts_func,
+        save_eval_artifacts_func=save_eval_artifacts_func,
         split_random_state=split_random_state,
     )
 

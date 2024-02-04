@@ -1,11 +1,13 @@
 import logging
 import os
 import sys
+from functools import partial
 from logging import Logger
 from typing import Union
 
 import typer
 
+from ml_pipelines.deployment.common.eval import run_eval_comparison_pipeline
 from ml_pipelines.deployment.local.io import (
     get_all_available_train_versions,
     get_latest_version,
@@ -13,36 +15,6 @@ from ml_pipelines.deployment.local.io import (
     get_train_artifacts,
     tag_best_version,
 )
-from ml_pipelines.pipeline.eval_pipeline import eval_pipeline
-
-
-def run_eval_comparison_pipeline(  # noqa: PLR0913
-    raw_data_version: str,
-    raw_data_root_path: os.PathLike,
-    train_versions: list[str],
-    train_artifacts_root_path: os.PathLike,
-    tag_best_model: bool,
-    logger: Logger,
-):
-    logger.info(f"Running eval pipeline on model versions: {train_versions}.")
-    logger.info(f"Raw data version {raw_data_version}.")
-    raw_data = get_raw_data(raw_data_version, raw_data_root_path)
-    all_metrics = []
-    for v in train_versions:
-        train_artifacts = get_train_artifacts(
-            v, train_artifacts_root_path, load_data=False
-        )
-        metrics, _ = eval_pipeline(
-            train_artifacts["model"],
-            train_artifacts["feature_eng_params"],
-            raw_data,
-            logger,
-        )
-        all_metrics.append((v, metrics))
-    best_version = max(all_metrics, key=lambda t: t[1])[0]
-    if tag_best_model and len(train_versions) > 1:
-        logger.info(f"Tagging best version as {best_version}")
-        tag_best_version(best_version, train_artifacts_root_path)
 
 
 def main(
@@ -91,11 +63,26 @@ def main(
             train_artifacts_root_path  # type: ignore
         )
 
+    get_raw_data_func = partial(
+        get_raw_data,
+        root_path=raw_data_root_path,  # type: ignore
+    )
+    get_train_artifacts_func = partial(
+        get_train_artifacts,
+        root_path=train_artifacts_root_path,  # type: ignore
+        load_data=False,
+    )
+    tag_best_version_func = partial(
+        tag_best_version,
+        train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
+    )
+
     run_eval_comparison_pipeline(  # noqa: PLR0913
         raw_data_version=raw_data_version,
-        raw_data_root_path=raw_data_root_path,  # type: ignore
         train_versions=train_versions,  # type: ignore
-        train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
+        get_raw_data_func=get_raw_data_func,
+        get_train_artifacts_func=get_train_artifacts_func,
+        tag_best_model_func=tag_best_version_func,
         tag_best_model=tag_best_model,
         logger=logger,
     )

@@ -1,41 +1,19 @@
 import logging
 import os
 import sys
+from functools import partial
 from logging import Logger
 from typing import Union
 
 import typer
-import uvicorn
 
+from ml_pipelines.deployment.common.serve import run_serve
 from ml_pipelines.deployment.local.io import (
     get_best_version,
     get_latest_version,
     get_train_artifacts,
+    prediction_logging_func,
 )
-from ml_pipelines.logic.serve.serve import Point, create_fastapi_app
-
-
-def prediction_logging_func(predictions: list[tuple[Point, float]]):
-    print("yay")  # noqa: T201
-    return True, None
-
-
-def run_serve(
-    train_version: str,
-    train_artifacts_root_path: os.PathLike,  # type: ignore
-    logger: Logger,
-    uvicorn_kwargs: dict,
-):
-    logger.info(f"Serving model {train_version}.")
-    train_artifacts = get_train_artifacts(
-        train_version, train_artifacts_root_path, load_data=False
-    )
-    model = train_artifacts["model"]
-    feature_eng_params = train_artifacts["feature_eng_params"]
-    app = create_fastapi_app(model, feature_eng_params, logger, prediction_logging_func)
-    logger.info("Loaded model, set up endpoint.")
-
-    uvicorn.run(app=app, **uvicorn_kwargs)  # type: ignore
 
 
 def main(
@@ -67,10 +45,17 @@ def main(
             "model.pickle",
         )
 
+    get_train_artifacts_func = partial(
+        get_train_artifacts,
+        root_path=train_artifacts_root_path,  # type: ignore
+        load_data=False,
+    )
+
     uvicorn_kwargs: dict = {}
     run_serve(  # noqa: PLR0913
         train_version=train_version,
-        train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
+        get_train_artifacts_func=get_train_artifacts_func,
+        prediction_logging_func=prediction_logging_func,
         logger=logger,
         uvicorn_kwargs=uvicorn_kwargs,
     )

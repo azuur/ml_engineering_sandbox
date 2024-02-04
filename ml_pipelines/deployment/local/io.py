@@ -9,6 +9,7 @@ from matplotlib.figure import Figure
 from sklearn.linear_model import LogisticRegression
 
 from ml_pipelines.logic.common.feature_eng import FeatureEngineeringParams
+from ml_pipelines.logic.serve.serve import Point
 from ml_pipelines.pipeline.train_pipeline import TrainArtifacts
 
 
@@ -119,3 +120,8 @@ def tag_best_version(train_version: str, train_artifacts_root_path: os.PathLike)
     train_dir = Path(train_artifacts_root_path)
     with open(train_dir / "best_model", "w") as f:
         f.write(train_version)
+
+
+def prediction_logging_func(predictions: list[tuple[Point, float]]):
+    print("yay")  # noqa: T201
+    return True, None
