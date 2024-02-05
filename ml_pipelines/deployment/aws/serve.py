@@ -7,25 +7,24 @@ from typing import Union
 
 import typer
 
-from ml_pipelines.deployment.common.serve import run_serve
-from ml_pipelines.deployment.local.io import (
+from ml_pipelines.deployment.aws.io import (
     get_best_version,
     get_latest_version,
     get_train_artifacts,
     prediction_logging_func,
 )
+from ml_pipelines.deployment.common.serve import run_serve
 
 
 def main(
-    train_artifacts_root_path: Union[str, None] = None,  # noqa: UP007
+    train_artifacts_bucket: Union[str, None] = None,  # noqa: UP007
     train_version: Union[str, None] = None,  # noqa: UP007
 ):
     """
     Serves a model in the /predict/ endpoint of a FastAPI app.
 
-    If `train_artifacts_root_path` is null, the command searches for the
-    TRAIN_ARTIFACTS_ROOT_PATH environment variable, and if not present,
-    assumes this to be "/".
+    If `train_artifacts_bucket` is null, the command searches for the
+    TRAIN_ARTIFACTS_BUCKET environment variable.
 
     If `train_version` is null, the command loads the model tagged as 'best_version'
     in the `train_artifacts_root_path`, and if not found, loads the latest model.
@@ -33,21 +32,21 @@ def main(
     logger = Logger(__file__)
     logger.addHandler(logging.StreamHandler(sys.stdout))
 
-    if train_artifacts_root_path is None:
-        train_artifacts_root_path = os.environ.get("TRAIN_ARTIFACTS_ROOT_PATH", "/")
+    if train_artifacts_bucket is None:
+        train_artifacts_bucket = os.environ["TRAIN_ARTIFACTS_BUCKET"]
 
     if train_version is None:
-        train_version = get_best_version(train_artifacts_root_path)  # type: ignore
+        train_version = get_best_version(train_artifacts_bucket)  # type: ignore
 
     if train_version is None:
         train_version = get_latest_version(
-            train_artifacts_root_path,  # type: ignore
+            train_artifacts_bucket,  # type: ignore
             "model.pickle",
         )
 
     get_train_artifacts_func = partial(
         get_train_artifacts,
-        train_artifacts_root_path,  # type: ignore
+        train_artifacts_bucket,  # type: ignore
         load_data=False,
     )
 
