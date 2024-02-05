@@ -43,6 +43,8 @@ RUN  groupadd -g "${GID}" python \
   && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" python \
   && chown python:python -R /package
 
+RUN apt-get update && apt-get install -y curl
+
 # For some reason copying to /package/dist/. doesn't work on AWS
 COPY --from=build /dist/*.whl /package/.
 RUN pip install *.whl
