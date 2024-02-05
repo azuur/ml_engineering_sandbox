@@ -1,8 +1,6 @@
 import json
-import os
 import pickle
-from io import StringIO
-from pathlib import Path
+from io import BytesIO, StringIO
 from tempfile import NamedTemporaryFile
 from uuid import uuid4
 
@@ -59,14 +57,18 @@ def save_train_artifacts(
         raise ModelVersionAlreadyExists()
 
     model_pickle_key = s3_prefix + "model.pickle"
-    with NamedTemporaryFile() as f:
-        pickle.dump(artifacts["model"], f)
-        s3.upload_file(f.name, bucket_name, model_pickle_key)
+    s3.upload_fileobj(
+        Fileobj=BytesIO(pickle.dumps(artifacts["model"])),
+        Bucket=bucket_name,
+        Key=model_pickle_key,
+    )
 
     feature_eng_params_key = s3_prefix + "feature_eng_params.json"
-    with NamedTemporaryFile(mode="w") as f:
-        f.write(artifacts["feature_eng_params"].json())
-        s3.upload_file(f.name, bucket_name, feature_eng_params_key)
+    s3.upload_fileobj(
+        Fileobj=BytesIO(artifacts["feature_eng_params"].json().encode()),
+        Bucket=bucket_name,
+        Key=feature_eng_params_key,
+    )
 
     data_keys = ["raw_train_data", "raw_test_data", "train_data", "test_data"]
     for key in data_keys:
@@ -84,16 +86,14 @@ def get_train_artifacts(bucket_name: str, version: str, load_data: bool = True):
     s3_prefix = f"{version}/"
 
     model_key = s3_prefix + "model.pickle"
-    s3.download_file(bucket_name, model_key, "/tmp/model.pickle")
-    with open("/tmp/model.pickle", "rb") as f:
-        model: LogisticRegression = pickle.load(f)
+
+    model: LogisticRegression = pickle.load(
+        s3.get_object(Bucket=bucket_name, Key=model_key)["Body"]
+    )
 
     feature_eng_params_key = s3_prefix + "feature_eng_params.json"
-    s3.download_file(
-        bucket_name, feature_eng_params_key, "/tmp/feature_eng_params.json"
-    )
-    with open("/tmp/feature_eng_params.json") as f:
-        feature_eng_params = FeatureEngineeringParams(**json.loads(f.read()))
+    fep = s3.get_object(Bucket=bucket_name, Key=feature_eng_params_key)["Body"].read()
+    feature_eng_params = FeatureEngineeringParams(**json.loads(fep.decode()))
 
     if not load_data:
         return TrainArtifacts(
@@ -107,9 +107,7 @@ def get_train_artifacts(bucket_name: str, version: str, load_data: bool = True):
         csv_key = s3_prefix + f"{key}.csv"
         data_dict[key] = pd.read_csv(
             StringIO(
-                s3.get_object(Bucket=bucket_name, Key=csv_key)["Body"]
-                .read()
-                .decode("utf-8")
+                s3.get_object(Bucket=bucket_name, Key=csv_key)["Body"].read().decode()
             )
         )
 
@@ -129,56 +127,72 @@ def save_eval_artifacts(bucket_name: str, version: str, metrics: float, plots: F
     s3_prefix = f"{version}/"
 
     metrics_key = s3_prefix + "metrics.txt"
-    with open("/tmp/metrics.txt", "w") as f:
-        f.write(str(metrics))
-    s3.upload_file("/tmp/metrics.txt", bucket_name, metrics_key)
+    s3.upload_fileobj(
+        Fileobj=BytesIO(str(metrics).encode()),
+        Bucket=bucket_name,
+        Key=metrics_key,
+    )
 
     plot_key = s3_prefix + "calibration_plot.png"
-    plots.savefig("/tmp/calibration_plot.png")
-    s3.upload_file("/tmp/calibration_plot.png", bucket_name, plot_key)
+    buf = BytesIO()
+    plots.savefig(buf)
+    buf.seek(0)
+    s3.upload_fileobj(
+        Fileobj=buf,
+        Bucket=bucket_name,
+        Key=plot_key,
+    )
 
 
 def get_all_available_train_versions(bucket_name: str):
-    s3 = boto3.client("s3")
-    objects = s3.list_objects(Bucket=bucket_name, Prefix="")
-    version_names = [Path(obj["Key"]).stem for obj in objects.get("Contents", [])]
-    return version_names
-
-
-def get_latest_version(bucket_name: str, filename: str) -> str:
     s3 = boto3.client("s3")
 
     # List objects in the specified prefix
     objects = s3.list_objects(Bucket=bucket_name, Prefix="")
 
-    dirs = {
-        obj["Key"].split("/")[0]
-        for obj in objects.get("Contents", [])
-        if obj["Size"] == 0 and obj["Key"].endswith("/")
-    }
+    return list(
+        {
+            obj["Key"].split("/")[0]
+            for obj in objects.get("Contents", [])
+            if len(obj["Key"].split("/")) == 2  # noqa: PLR2004
+        }
+    )
+
+
+def get_latest_version(bucket_name: str, filename: str) -> str:
+    s3 = boto3.client("s3")
+    objects = s3.list_objects(Bucket=bucket_name, Prefix="")
+    depth = 2
     versions = [
         (obj["Key"].split("/")[0], obj["LastModified"])
         for obj in objects.get("Contents", [])
-        if obj["Key"].endswith(filename) and obj["Key"].split("/")[0] in dirs
+        if obj["Key"].endswith(filename) and len(obj["Key"].split("/")) == depth
     ]
-
     return max(versions, key=lambda t: t[1])[0]
 
 
-def get_best_version(train_artifacts_root_path: os.PathLike):
-    train_dir = Path(train_artifacts_root_path)
-    if "best_model" not in set(f for f in train_dir.iterdir() if f.is_file()):
+def get_best_version(bucket_name: str):
+    s3 = boto3.client("s3")
+    objects = s3.list_objects(Bucket=bucket_name, Prefix="").get("Contents", [])
+    keys = {o["Key"] for o in objects}
+    if "best_model" not in keys:
         return None
-    with open(train_dir / "best_model") as f:
-        return f.read()
+    return (
+        s3.get_object(Bucket=bucket_name, Key="best_model")["Body"]
+        .read()
+        .decode("utf-8")
+    )
 
 
-def tag_best_version(train_version: str, train_artifacts_root_path: os.PathLike):
-    train_dir = Path(train_artifacts_root_path)
-    with open(train_dir / "best_model", "w") as f:
-        f.write(train_version)
+def tag_best_version(bucket_name: str, train_version: str):
+    s3 = boto3.client("s3")
+    s3.upload_fileobj(
+        Fileobj=BytesIO(train_version.encode()),
+        Bucket=bucket_name,
+        Key="best_model",
+    )
 
 
 def prediction_logging_func(predictions: list[tuple[Point, float]]):
-    print("yay")  # noqa: T201
+    print("logged preds!")  # noqa: T201
     return True, None

@@ -28,12 +28,11 @@ def main(
     Runs the feature engineering and training pipeline using local paths
     for inputs and outputs.
 
-    If `raw_data_root_path` is null, the command searches for the RAW_DATA_ROOT_PATH
-    environment variable, and if not present, assumes this to be "/".
+    If `raw_data_bucket` is null, the command searches for the RAW_DATA_BUCKET
+    environment variable.
 
-    If `train_artifacts_root_path` is null, the command searches for the
-    TRAIN_ARTIFACTS_ROOT_PATH environment variable, and if not present,
-    assumes this to be "/".
+    If `train_artifacts_bucket` is null, the command searches for the
+    TRAIN_ARTIFACTS_BUCKET environment variable.
 
     If `raw_data_version` is null, the command searches for the latest version in
     `raw_data_root_path`.
