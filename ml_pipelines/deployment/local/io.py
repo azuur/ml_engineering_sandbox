@@ -18,7 +18,7 @@ def make_version(prefix: str) -> str:
     return f"{prefix}_{version}"
 
 
-def get_raw_data(version: str, root_path: os.PathLike) -> pd.DataFrame:
+def get_raw_data(root_path: os.PathLike, version: str) -> pd.DataFrame:
     return pd.read_csv(Path(root_path) / version / "raw_data.csv")
 
 
@@ -27,8 +27,8 @@ class ModelVersionAlreadyExists(Exception):
 
 
 def save_train_artifacts(
-    version: str,
     root_path: os.PathLike,
+    version: str,
     artifacts: TrainArtifacts,
 ):
     version_dir = Path(root_path) / version
@@ -54,7 +54,7 @@ def save_train_artifacts(
             dataset.to_csv(version_dir / f"{key}.csv", index=False)
 
 
-def get_train_artifacts(version: str, root_path: os.PathLike, load_data: bool = True):
+def get_train_artifacts(root_path: os.PathLike, version: str, load_data: bool = True):
     version_dir = Path(root_path) / version
     with open(version_dir / "model.pickle", "rb") as f:  # type: ignore
         model: LogisticRegression = pickle.load(f)
@@ -84,7 +84,7 @@ def get_train_artifacts(version: str, root_path: os.PathLike, load_data: bool = 
 
 
 def save_eval_artifacts(
-    version: str, root_path: os.PathLike, metrics: float, plots: Figure
+    root_path: os.PathLike, version: str, metrics: float, plots: Figure
 ):
     version_dir = Path(root_path) / version
     with open(version_dir / "metrics.txt", "w") as f:  # type: ignore
@@ -116,7 +116,7 @@ def get_best_version(train_artifacts_root_path: os.PathLike):
         return f.read()
 
 
-def tag_best_version(train_version: str, train_artifacts_root_path: os.PathLike):
+def tag_best_version(train_artifacts_root_path: os.PathLike, train_version: str):
     train_dir = Path(train_artifacts_root_path)
     with open(train_dir / "best_model", "w") as f:
         f.write(train_version)

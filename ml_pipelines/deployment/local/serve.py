@@ -47,7 +47,7 @@ def main(
 
     get_train_artifacts_func = partial(
         get_train_artifacts,
-        root_path=train_artifacts_root_path,  # type: ignore
+        train_artifacts_root_path,  # type: ignore
         load_data=False,
     )
 

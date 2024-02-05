@@ -60,15 +60,15 @@ def main(
 
     get_raw_data_func = partial(
         get_raw_data,
-        root_path=raw_data_root_path,  # type: ignore
+        raw_data_root_path,  # type: ignore
     )
     save_train_artifacts_func = partial(
         save_train_artifacts,
-        root_path=train_artifacts_root_path,  # type: ignore
+        train_artifacts_root_path,  # type: ignore
     )
     save_eval_artifacts_func = partial(
         save_eval_artifacts,
-        root_path=train_artifacts_root_path,  # type: ignore
+        train_artifacts_root_path,  # type: ignore
     )
 
     run_train_pipeline(  # noqa: PLR0913

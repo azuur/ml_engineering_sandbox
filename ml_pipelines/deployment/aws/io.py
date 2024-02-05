@@ -3,6 +3,7 @@ import os
 import pickle
 from io import StringIO
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from uuid import uuid4
 
 import boto3
@@ -21,7 +22,7 @@ def make_version(prefix: str) -> str:
     return f"{prefix}_{version}"
 
 
-def get_raw_data(version: str, bucket_name: str) -> pd.DataFrame:
+def get_raw_data(bucket_name: str, version: str) -> pd.DataFrame:
     s3 = boto3.client("s3")
     s3_key = f"{version}/raw_data.csv"
 
@@ -36,8 +37,8 @@ class ModelVersionAlreadyExists(Exception):
 
 
 def save_train_artifacts(
-    version: str,
     bucket_name: str,
+    version: str,
     artifacts: TrainArtifacts,
 ):
     s3 = boto3.client("s3")
@@ -50,7 +51,7 @@ def save_train_artifacts(
     try:
         head_object = s3.head_object(Bucket=bucket_name, Key=s3_prefix)
     except ClientError as ex:
-        if ex.response["Error"]["Code"] == "NoSuchKey":
+        if ex.response["Error"]["Code"] == "404":
             pass
         else:
             raise
@@ -58,25 +59,26 @@ def save_train_artifacts(
         raise ModelVersionAlreadyExists()
 
     model_pickle_key = s3_prefix + "model.pickle"
-    with open("/tmp/model.pickle", "wb") as f:
+    with NamedTemporaryFile() as f:
         pickle.dump(artifacts["model"], f)
-    s3.upload_file("/tmp/model.pickle", bucket_name, model_pickle_key)
+        s3.upload_file(f.name, bucket_name, model_pickle_key)
 
     feature_eng_params_key = s3_prefix + "feature_eng_params.json"
-    with open("/tmp/feature_eng_params.json", "w") as f:
+    with NamedTemporaryFile(mode="w") as f:
         f.write(artifacts["feature_eng_params"].json())
-    s3.upload_file("/tmp/feature_eng_params.json", bucket_name, feature_eng_params_key)
+        s3.upload_file(f.name, bucket_name, feature_eng_params_key)
 
     data_keys = ["raw_train_data", "raw_test_data", "train_data", "test_data"]
     for key in data_keys:
         if key in artifacts:
-            dataset = artifacts[key]  # type: ignore
+            dataset: pd.DataFrame = artifacts[key]  # type: ignore
             csv_key = s3_prefix + f"{key}.csv"
-            dataset.to_csv("/tmp/" + f"{key}.csv", index=False)
-            s3.upload_file("/tmp/" + f"{key}.csv", bucket_name, csv_key)
+            with NamedTemporaryFile(mode="w") as f:
+                dataset.to_csv(f.name, index=False)
+                s3.upload_file(f.name, bucket_name, csv_key)
 
 
-def get_train_artifacts(version: str, bucket_name: str, load_data: bool = True):
+def get_train_artifacts(bucket_name: str, version: str, load_data: bool = True):
     s3 = boto3.client("s3")
 
     s3_prefix = f"{version}/"
@@ -121,9 +123,7 @@ def get_train_artifacts(version: str, bucket_name: str, load_data: bool = True):
     )
 
 
-def save_eval_artifacts_s3(
-    version: str, bucket_name: str, metrics: float, plots: Figure
-):
+def save_eval_artifacts(bucket_name: str, version: str, metrics: float, plots: Figure):
     s3 = boto3.client("s3")
 
     s3_prefix = f"{version}/"
@@ -145,25 +145,24 @@ def get_all_available_train_versions(bucket_name: str):
     return version_names
 
 
-def get_latest_version(bucket_name: str, filename: str, prefix: str = "") -> str:
+def get_latest_version(bucket_name: str, filename: str) -> str:
     s3 = boto3.client("s3")
 
     # List objects in the specified prefix
-    objects = s3.list_objects(Bucket=bucket_name, Prefix=prefix)
+    objects = s3.list_objects(Bucket=bucket_name, Prefix="")
 
-    # Extract version names and last modified times from object metadata
+    dirs = {
+        obj["Key"].split("/")[0]
+        for obj in objects.get("Contents", [])
+        if obj["Size"] == 0 and obj["Key"].endswith("/")
+    }
     versions = [
-        (obj["Key"], obj["LastModified"]) for obj in objects.get("Contents", [])
+        (obj["Key"].split("/")[0], obj["LastModified"])
+        for obj in objects.get("Contents", [])
+        if obj["Key"].endswith(filename) and obj["Key"].split("/")[0] in dirs
     ]
 
-    # Sort versions based on last modified time in descending order
-    sorted_versions = sorted(versions, key=lambda t: t[1], reverse=True)
-
-    # Return the version with the latest modification time
-    latest_version_key = sorted_versions[0][0]
-    latest_version = Path(latest_version_key).parent.stem
-
-    return latest_version
+    return max(versions, key=lambda t: t[1])[0]
 
 
 def get_best_version(train_artifacts_root_path: os.PathLike):

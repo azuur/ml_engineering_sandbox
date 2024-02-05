@@ -65,16 +65,16 @@ def main(
 
     get_raw_data_func = partial(
         get_raw_data,
-        root_path=raw_data_root_path,  # type: ignore
+        raw_data_root_path,  # type: ignore
     )
     get_train_artifacts_func = partial(
         get_train_artifacts,
-        root_path=train_artifacts_root_path,  # type: ignore
+        train_artifacts_root_path,  # type: ignore
         load_data=False,
     )
     tag_best_version_func = partial(
         tag_best_version,
-        train_artifacts_root_path=train_artifacts_root_path,  # type: ignore
+        train_artifacts_root_path,  # type: ignore
     )
 
     run_eval_comparison_pipeline(  # noqa: PLR0913
