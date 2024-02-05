@@ -7,13 +7,13 @@ from typing import Union
 
 import typer
 
-from ml_pipelines.deployment.common.serve import run_serve
-from ml_pipelines.deployment.local.io import (
+from ml_pipelines.deployment.aws.io import (
     get_best_version,
     get_latest_version,
     get_train_artifacts,
     prediction_logging_func,
 )
+from ml_pipelines.deployment.common.serve import run_serve
 
 
 def main(
