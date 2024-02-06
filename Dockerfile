@@ -49,6 +49,6 @@ RUN apt-get update && apt-get install -y curl
 COPY --from=build /dist/*.whl /package/.
 RUN pip install *.whl
 
-EXPOSE 8000
+EXPOSE 80
 
 USER python
