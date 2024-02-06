@@ -51,7 +51,7 @@ def main(
         load_data=False,
     )
 
-    uvicorn_kwargs: dict = {"host": "0.0.0.0", "reload": False, "debug": False}
+    uvicorn_kwargs: dict = {"host": "0.0.0.0", "reload": False}
     run_serve(  # noqa: PLR0913
         train_version=train_version,
         get_train_artifacts_func=get_train_artifacts_func,
