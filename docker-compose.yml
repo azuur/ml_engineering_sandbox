@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  fastapi:
+    image: ml_pipelines:latest
+    ports:
+      - "8000:8000"
+    command: ["/bin/bash", "-c", "python -m ml_pipelines serve_local"]
+    env_file:
+      - .env
+    volumes:
+      - /path/to/data:/package/data
