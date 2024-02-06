@@ -56,4 +56,3 @@ def make_calibration_plot(
         ax.set_ylim(-0.05, 1.1 * m_bins)
 
     return plot
-    return plot

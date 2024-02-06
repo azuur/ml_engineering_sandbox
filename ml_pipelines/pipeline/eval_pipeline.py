@@ -29,31 +29,8 @@ def eval_pipeline(
     y_score = predict(model, data[["X1", "X2"]], logger)
     metrics = calculate_metrics(data["Y"], y_score, logger)
 
-    # Output
     plots, axs = plt.subplots(1, 2, figsize=(10, 5))
     make_roc_plot(model, data, logger)(ax=axs[0])
     make_calibration_plot(data, y_score, logger)(ax=axs[1])
     logger.info("Finished evaluation pipeline.")
     return (metrics, plots)
-
-
-# fig, ax = plt.subplots()
-# for i in [0, 1]:
-#     tmp = test_data.loc[test_data.Y == i, :]
-#     ax.scatter(
-#         tmp["X1"],
-#         tmp["X2"],
-#         c=tmp["Y"].map({0: "lightgray", 1: "red"}),
-#         label=f"Y={i}",
-#         s=2,
-#         alpha=0.7,
-#     )
-# ax.set_xlabel("X1")
-# ax.set_ylabel("X2")
-# ax.set_title("Scatter plot of training data")
-# ax.legend(framealpha=1)
-# plt.show()
-# plt.show()
-# ax.legend(framealpha=1)
-# plt.show()
-# plt.show()
