@@ -8,11 +8,11 @@ This repo contains code to train, evaluate, and serve a simple machine learning 
 
 Some ideas I am implementing in this repo are:
 
-- Do things as simply but professionally as possible. A simple but working solution is better than a sophisticated solution that never runs. 
+- Do things as simply but professionally as possible. A simple working solution is better than a sophisticated solution that isn't deployed. ([Agile is the only thing that works](https://www.youtube.com/watch?v=9K20e7jlQPA).)
 - [Oneflow](https://www.endoflineblog.com/oneflow-a-git-branching-model-and-workflow) as the Git branching strategy.
 - Cleanish architecture. For now, this means that code is separated between "core" and "non-core" tasks and data structures, and "core" code doesn't depend on "non-core" code.
 - One repo and one docker image for train, eval, and serve. IMO, this makes sharing functionality across tasks easier and artifact versioning simpler. (But I'm interested in hearing about drawbacks, too.)
-- Use Python packaging. The project is a Python package with [poetry](https://python-poetry.org/) as the build backend.
+- Use Python standard tooling to make collaboration easier. In particular, the project is a Python package with [poetry](https://python-poetry.org/) as the build backend.
 - CI is done using [pre-commit](https://pre-commit.com/) and GitHub actions (since we're in GitHub).
 - CD should be done depending on how the project is to be deployed. Currently, I'm experimenting with AWS for deployment, so I also use it for CD.
 
