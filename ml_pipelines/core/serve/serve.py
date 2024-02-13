@@ -6,11 +6,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from sklearn.linear_model import LogisticRegression
 
-from ml_pipelines.logic.common.feature_eng import (
+from ml_pipelines.core.common.feature_eng import (
     FeatureEngineeringParams,
     transform_features,
 )
-from ml_pipelines.logic.common.model import predict
+from ml_pipelines.core.common.model import predict
 
 
 class Point(BaseModel):

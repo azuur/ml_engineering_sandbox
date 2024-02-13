@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
-from ml_pipelines.logic.common.feature_eng import (
+from ml_pipelines.core.common.feature_eng import (
     FeatureEngineeringParams,
     transform_features,
 )
-from ml_pipelines.logic.common.model import predict
-from ml_pipelines.logic.eval.eval import (
+from ml_pipelines.core.common.model import predict
+from ml_pipelines.core.eval.eval import (
     calculate_metrics,
     make_calibration_plot,
     make_roc_plot,

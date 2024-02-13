@@ -8,8 +8,8 @@ import pandas as pd
 from matplotlib.figure import Figure
 from sklearn.linear_model import LogisticRegression
 
-from ml_pipelines.logic.common.feature_eng import FeatureEngineeringParams
-from ml_pipelines.logic.serve.serve import Point
+from ml_pipelines.core.common.feature_eng import FeatureEngineeringParams
+from ml_pipelines.core.serve.serve import Point
 from ml_pipelines.pipeline.train_pipeline import TrainArtifacts
 
 
