@@ -4,12 +4,12 @@ from typing import NotRequired, TypedDict
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
-from ml_pipelines.logic.common.feature_eng import (
+from ml_pipelines.core.common.feature_eng import (
     FeatureEngineeringParams,
     fit_feature_transform,
     transform_features,
 )
-from ml_pipelines.logic.train.train import split_data, train_model
+from ml_pipelines.core.train.train import split_data, train_model
 
 
 class TrainArtifacts(TypedDict):

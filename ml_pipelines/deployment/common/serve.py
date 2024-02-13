@@ -3,7 +3,7 @@ from logging import Logger
 
 import uvicorn
 
-from ml_pipelines.logic.serve.serve import PredictionLoggingFunc, create_fastapi_app
+from ml_pipelines.core.serve.serve import PredictionLoggingFunc, create_fastapi_app
 from ml_pipelines.pipeline.train_pipeline import TrainArtifacts
 
 
