@@ -2,23 +2,35 @@
 
 Simple ML pipeline repo for experimenting with CI/CD / DevOps / MLOps.
 
+## The idea
+
+This repo contains code to train, evaluate, and serve a simple machine learning model. The objective of this project is to work on my MLOps and ML engineering skills.
+
+Some ideas I am implementing in this repo are:
+
+- Do things as simply but professionally as possible. A simple but working solution is better than a sophisticated solution that never runs. 
+- [Oneflow](https://www.endoflineblog.com/oneflow-a-git-branching-model-and-workflow) as the Git branching strategy.
+- Cleanish architecture. For now, this means that code is separated between "core" and "non-core" tasks and data structures, and "core" code doesn't depend on "non-core" code.
+- One repo and one docker image for train, eval, and serve. IMO, this makes sharing functionality across tasks easier and artifact versioning simpler. (But I'm interested in hearing about drawbacks, too.)
+- Use Python packaging. The project is a Python package with [poetry](https://python-poetry.org/) as the build backend.
+- CI is done using [pre-commit](https://pre-commit.com/) and GitHub actions (since we're in GitHub).
+- CD should be done depending on how the project is to be deployed. Currently, I'm experimenting with AWS for deployment, so I also use it for CD.
+
+Since the point of this project is _not_ to sharpen my data anaylsis/science skills, the actual data for the project is completely simulated. Maybe later I will try to modify this in order to actually solve a useful problem.
+
 ## To do
 
-- ~~Use Python 3.11 in CI github action~~
-- ~~make pipelines functions~~
-- ~~add loggers to stuff~~
-- ~~add local deployment code...~~
-- ~~add versioning to training... in deployment?~~
-- ~~add eval pipeline, model comparison~~
-- ~~add "best model" mark. add "get_best_model"~~
-- ~~add Dockerfile~~
-- add real prediction logging func
-- add simple demo unit tests
-- add db conn / func to save inference cases (local deployment)
-- add build script to push to ECR (AWS deployment)
-- add rest of AWS deployment (using S3, EC2, AWS CodePipeline)
+- Add section detailing v1 CD + deployment on AWS (with CodeBuild, ECR, Fargate ECS tasks and services, and ELB).
+- Create deployment stack using IaC tool (could be AWS CloudFormation).
+- Add real prediction logging func
+- Add simple demo unit tests
+- Add db conn / func to save inference cases
+- Add build script to push to ECR (AWS deployment)
 
 # Commands to remember
+
+This is a bit inelegant. Sorry.
+
 - python ml_pipelines/deployment/local/train.py
 - python ml_pipelines/deployment/local/eval.py
 - python ml_pipelines/deployment/local/serve.py
